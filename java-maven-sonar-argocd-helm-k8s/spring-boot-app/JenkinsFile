@@ -1,13 +1,22 @@
 pipeline {
   agent {
     docker {
-      // 
-      image 'cibuilds/maven:3.6.3'
+      image 'maven:3.9.9-eclipse-temurin-17'  // ✅ stable official image
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
 
   stages {
+
+    stage('Install Docker CLI') {
+      steps {
+        sh '''
+          apt-get update
+          apt-get install -y docker.io
+          docker --version
+        '''
+      }
+    }
 
     stage('Checkout') {
       steps {
@@ -26,7 +35,7 @@ pipeline {
     stage('Cleanup') {
       steps {
         sh '''
-          echo "🧹 Cleaning Sonar and Maven cache to free up space..."
+          echo "🧹 Cleaning Sonar and Maven cache..."
           rm -rf /root/.sonar/_tmp/* || true
           rm -rf /root/.m2/repository/* || true
           df -h
